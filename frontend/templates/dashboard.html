@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Fitness Analyzer | AI-Powered Nutrition</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 900px;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(to right, #4CAF50, #45a049);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .recipe-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 150px;
+            transition: border 0.3s;
+        }
+
+        .recipe-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .goal-selector {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .goal-option {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .goal-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .goal-option.active {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
+        }
+
+        .goal-option i {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .analyze-btn {
+            background: linear-gradient(to right, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .analyze-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .result-container {
+            margin-top: 40px;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-top: 5px solid #4CAF50;
+        }
+
+        .match-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .match {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .mismatch {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto;
+            font-size: 2rem;
+            font-weight: 700;
+            position: relative;
+        }
+
+        .match .score-circle {
+            background: conic-gradient(#4CAF50 var(--score), #e0e0e0 0%);
+        }
+
+        .mismatch .score-circle {
+            background: conic-gradient(#ff6b6b var(--score), #e0e0e0 0%);
+        }
+
+        .score-circle span {
+            background: white;
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .recommendations {
+            margin-top: 25px;
+        }
+
+        .recommendation-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: transform 0.2s;
+        }
+
+        .recommendation-item:hover {
+            transform: translateX(5px);
+        }
+
+        .recommendation-item i {
+            color: #4CAF50;
+            font-size: 1.2rem;
+        }
+
+        .priority-high {
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .priority-medium {
+            border-left: 4px solid #ffa726;
+        }
+
+        .priority-low {
+            border-left: 4px solid #4CAF50;
+        }
+
+        .nutrition-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .nutrition-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .nutrition-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .nutrition-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+            display: none;
+        }
+
+        .loading i {
+            font-size: 2rem;
+            color: #667eea;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid #eee;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .goal-selector {
+                flex-direction: column;
+            }
+            
+            .nutrition-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-utensils"></i> Recipe Fitness Analyzer</h1>
+            <p>AI-powered analysis to match recipes with your fitness goals</p>
+        </div>
+
+        <div class="content">
+            <div class="form-group">
+                <label for="recipe"><i class="fas fa-pencil-alt"></i> Enter Your Recipe</label>
+                <textarea 
+                    id="recipe" 
+                    class="recipe-input" 
+                    placeholder="Example: Grilled chicken breast with steamed broccoli, quinoa, and olive oil. Season with herbs and spices..."
+                >Grilled chicken breast with steamed broccoli, quinoa, and olive oil dressing.</textarea>
+            </div>
+
+            <div class="form-group">
+                <label><i class="fas fa-bullseye"></i> Select Your Fitness Goal</label>
+                <div class="goal-selector">
+                    <div class="goal-option active" data-goal="Lose Weight">
+                        <i class="fas fa-weight"></i>
+                        <div>Lose Weight</div>
+                        <small>Calorie deficit</small>
+                    </div>
+                    <div class="goal-option" data-goal="Gain Weight">
+                        <i class="fas fa-dumbbell"></i>
+                        <div>Gain Weight</div>
+                        <small>Muscle building</small>
+                    </div>
+                </div>
+            </div>
+
+            <button class="analyze-btn" onclick="analyzeRecipe()">
+                <i class="fas fa-brain"></i> Analyze Recipe with AI
+            </button>
+
+            <div class="loading" id="loading">
+                <i class="fas fa-spinner"></i>
+                <p>Analyzing recipe with ML pipeline...</p>
+            </div>
+
+            <div class="result-container" id="resultContainer">
+                <div class="result-card" id="resultCard">
+                    <!-- Results will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Powered by Deep Learning • Transformer Models • Vector Database</p>
+        </div>
+    </div>
+
+    <script>
+        
+        document.querySelectorAll('.goal-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.goal-option').forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        async function analyzeRecipe() {
+            const recipe = document.getElementById('recipe').value;
+            const goal = document.querySelector('.goal-option.active').dataset.goal;
+            
+            if (!recipe.trim()) {
+                alert('Please enter a recipe to analyze');
+                return;
+            }
+            
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('resultContainer').style.display = 'none';
+            
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({recipe: recipe, goal: goal})
+                });
+                
+                const data = await response.json();
+                
+                
+                document.getElementById('loading').style.display = 'none';
+                
+                
+                displayResults(data);
+                
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                alert('Error analyzing recipe: ' + error.message);
+            }
+        }
+        
+        function displayResults(data) {
+            const resultCard = document.getElementById('resultCard');
+            const resultContainer = document.getElementById('resultContainer');
+            
+            if (data.error) {
+                resultCard.innerHTML = `
+                    <div class="mismatch match-badge">ERROR</div>
+                    <h3>Analysis Failed</h3>
+                    <p>${data.error}</p>
+                `;
+                resultCard.className = 'result-card';
+            } else {
+                const isMatch = data.match_status === "MATCH";
+                const scorePercent = data.score_percent || Math.round(data.score * 100);
+                
+                
+                const priorityIcons = {
+                    'high': 'fas fa-exclamation-circle',
+                    'medium': 'fas fa-info-circle', 
+                    'low': 'fas fa-check-circle'
+                };
+                
+                resultCard.innerHTML = `
+                    <div class="${isMatch ? 'match' : 'mismatch'} match-badge">
+                        ${isMatch ? '✅ PERFECT MATCH' : '⚠️ NEEDS ADJUSTMENT'}
+                    </div>
+                    
+                    <h3>${data.reason || 'Analysis Complete'}</h3>
+                    
+                    <div class="score-circle" style="--score: ${scorePercent}%">
+                        <span>${scorePercent}%</span>
+                    </div>
+                    
+                    <div style="text-align: center; margin: 20px 0;">
+                        <p>${data.analysis_notes || 'AI-powered analysis completed'}</p>
+                    </div>
+                    
+                    ${data.recommendations && data.recommendations.length > 0 ? `
+                        <div class="recommendations">
+                            <h4><i class="fas fa-lightbulb"></i> Recommendations</h4>
+                            ${data.recommendations.map(rec => `
+                                <div class="recommendation-item priority-${rec.priority || 'medium'}">
+                                    <i class="${priorityIcons[rec.priority] || 'fas fa-info-circle'}"></i>
+                                    <div>${rec.text}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    
+                    ${data.calorie_estimate ? `
+                        <div class="nutrition-grid">
+                            <div class="nutrition-item">
+                                <div class="nutrition-value">${data.calorie_estimate}</div>
+                                <div class="nutrition-label">Calories</div>
+                            </div>
+                            <div class="nutrition-item">
+                                <div class="nutrition-value">${data.protein_g || '--'}g</div>
+                                <div class="nutrition-label">Protein</div>
+                            </div>
+                            <div class="nutrition-item">
+                                <div class="nutrition-value">${data.carbs_g || '--'}g</div>
+                                <div class="nutrition-label">Carbs</div>
+                            </div>
+                            <div class="nutrition-item">
+                                <div class="nutrition-value">${data.fats_g || '--'}g</div>
+                                <div class="nutrition-label">Fats</div>
+                            </div>
+                        </div>
+                    ` : ''}
+                `;
+                
+                resultCard.className = `result-card ${isMatch ? 'match' : 'mismatch'}`;
+            }
+            
+            
+            resultContainer.style.display = 'block';
+        }
+        
+        
+        window.onload = function() {
+            
+            console.log('Recipe Fitness Analyzer loaded successfully!');
+        };
+    </script>
+</body>
+</html>
