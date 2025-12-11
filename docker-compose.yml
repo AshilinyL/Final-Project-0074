@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  chromadb:
+    image: chromadb/chroma:latest
+    ports: ["8001:8000"]
+    volumes: [chroma_data:/chroma/chroma]
+    networks: [ml-network]
+
+  backend:
+    build: ./backend
+    ports: ["8000:8000"]
+    depends_on: [chromadb]
+    volumes: [./backend:/app]
+    environment:
+      - CHROMA_HOST=chromadb
+      - CUDA_VISIBLE_DEVICES=  # Force CPU mode
+    networks: [ml-network]
+
+  frontend:
+    build: ./frontend
+    ports: ["3000:3000"]
+    depends_on: [backend]
+    volumes: [./frontend:/app]
+    environment:
+      - BACKEND_URL=http://backend:8000
+    networks: [ml-network]
+
+networks:
+  ml-network:
+
+volumes:
+  chroma_data:
